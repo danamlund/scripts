@@ -46,7 +46,7 @@ Arguments:
         Send an invasion every <months> months but not now.
         Set to 0 to disable automatically sending invasions.
         Enabling this will save the state to the fortress and continue after
-          loading the fortress. But only if you add ``outsider-invasion -enable``
+          loading the fortress. But only if you add ``outsider-invasion``
           to your ``dfhack.init`` file.
         This option understands ``-invasion-type`` and ``-difficulty``.
         Only one auto invasion can be active at a time.
