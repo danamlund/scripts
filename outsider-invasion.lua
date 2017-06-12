@@ -26,7 +26,7 @@ Arguments:
         Send an invasion right now.
     -invasion-type <string>
         Type of army to invade.
-        Options: goblins, elves, semimegabeasts
+        Options: random, goblins (default), elves, semimegabeasts
     -difficulty <float>
         Scale the difficult of the invasion army.
         examples: 0.5 is half as difficult, 2.0 is twice as difficult
@@ -50,6 +50,7 @@ Arguments:
           to your ``dfhack.init`` file.
         This option understands ``-invasion-type`` and ``-difficulty``.
         Only one auto invasion can be active at a time.
+        Warning: Not recommended due to frequency crashes when sending invasion.
 
 Examples:
 
@@ -57,13 +58,13 @@ Examples:
         outsider-invasion -now
 
     Spawn a very very difficult goblin invasion
-        outsider-invasion -now -invasionType goblins -strength 10000 -cap 300
+        outsider-invasion -now -invasion-type goblins -strength 10000 -cap 300
 
     Setup an invasion every 10 months
-        outsider-invasion -everyMonths 10
+        outsider-invasion -every-months 10
 
     Setup an invasion every 10 months for all current and future forts
-        add ``outsider-invasion -everyMonths 10`` to your dfhack.init
+        add ``outsider-invasion -every-months 10`` to your dfhack.init
         file.  Setting everyMonths to what is already is does not
         reset the date for the next invasion.
 
@@ -696,19 +697,30 @@ function setUnitJewelry(unit, strength)
    local ears = {}
    local digits = {}
    local teeth = {}
-   for _,v in pairs(unit.body.body_plan.body_parts) do
-      if v.token == "NK" then
-         table.insert(necks, v.token)
-      elseif string.ends(v.token, "_J") then
-         table.insert(wrists, v.token)
-      elseif string.ends(v.token, "_EAR") then
-         table.insert(ears, v.token)
-      elseif string.starts(v.token, "FINGER") or string.starts(v.token, "TOE") then
-         table.insert(digits, v.token)
-      elseif string.ends(v.token, "TOOTH") then
-         table.insert(teeth, v.token)
+   if unit then
+      for _,v in pairs(unit.body.body_plan.body_parts) do
+         if v.token == "NK" then
+            table.insert(necks, v.token)
+         elseif string.ends(v.token, "_J") then
+            table.insert(wrists, v.token)
+         elseif string.ends(v.token, "_EAR") then
+            table.insert(ears, v.token)
+         elseif string.starts(v.token, "FINGER") or string.starts(v.token, "TOE") then
+            table.insert(digits, v.token)
+         elseif string.ends(v.token, "TOOTH") then
+            table.insert(teeth, v.token)
+         end
       end
-   end
+   else
+      table.insert(necks, "NK")
+      table.insert(wrists, "RH_J")
+      table.insert(wrists, "LH_J")
+      table.insert(ears, "R_EAR")
+      table.insert(ears, "L_EAR")
+      table.insert(digits, "FINGER1")
+      table.insert(digits, "TOE1")
+      table.insert(teeth, "U_F_TOOTH")
+  end
    
    local jewelryTypes = {
       { item = "AMULET:NONE",
@@ -1184,18 +1196,23 @@ function invasion(options)
    local cap = options.cap and tonumber(options.cap) or getFortressMaxInvasionCap()
    dryRun = options["dry-run"] and true or false
    logTrace = logTrace or dryRun
-   local invasionType = nil
+   if not options["invasion-type"] then
+      options["invasion-type"] = "goblins"
+   end
+   local invasionType = null
    if options["invasion-type"] then
-      for _,v in pairs(invasionTypes) do
-         if v.name == options["invasion-type"] then
-            invasionType = v
+      if options["invasion-type"] == "random" then
+         invasionType = invasionTypes[math.random(#invasionTypes)]
+      else
+         for _,v in pairs(invasionTypes) do
+            if v.name == options["invasion-type"] then
+               invasionType = v
+            end
+         end
+         if not invasionType then
+            error("Invalid invasion-type: " .. options["invasion-type"])
          end
       end
-      if not invasionType then
-         error("Invalid invasion-type: " .. options["invasion-type"])
-      end
-   else
-      invasionType = invasionTypes[math.random(#invasionTypes)]
    end
    local arenaSide = options["arena-side"] and tonumber(options["arena-side"]) or 0
 
