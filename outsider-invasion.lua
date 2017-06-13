@@ -1286,5 +1286,4 @@ end
 
 doEnable()
 
-   -- running with suspend seems to cause fewer crashes
-dfhack.with_suspend(run, {...})
+run({...})
