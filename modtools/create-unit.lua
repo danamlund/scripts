@@ -78,7 +78,31 @@ end
 
 local utils=require 'utils'
 
-function createUnit(race_id, caste_id, location)
+function createUnit(...)
+  local old_gametype = df.global.gametype
+  local old_mode = df.global.ui.main.mode
+  local old_popups = {}
+  for _, popup in pairs(df.global.world.status.popups) do
+    table.insert(old_popups, popup)
+  end
+  df.global.world.status.popups:resize(0)
+
+  local ok, ret = dfhack.pcall(createUnitInner, ...)
+
+  df.global.gametype = old_gametype
+  df.global.ui.main.mode = old_mode
+  for _, popup in pairs(old_popups) do
+    df.global.world.status.popups:insert('#', popup)
+  end
+
+  if not ok then
+    error(ret)
+  end
+
+  return ret
+end
+
+function createUnitInner(race_id, caste_id, location)
   local view_x = df.global.window_x
   local view_y = df.global.window_y
   local view_z = df.global.window_z
@@ -87,7 +111,6 @@ function createUnit(race_id, caste_id, location)
   local dwarfmodeScreen = df.viewscreen_dwarfmodest:new()
   curViewscreen.child = dwarfmodeScreen
   dwarfmodeScreen.parent = curViewscreen
-  local oldMode = df.global.ui.main.mode
   df.global.ui.main.mode = df.ui_sidebar_mode.LookAround
 
   local gui = require 'gui'
@@ -104,11 +127,10 @@ function createUnit(race_id, caste_id, location)
     df.global.world.arena_spawn.creature_cnt:insert(0,0)
   end
 
-  local old_gametype = df.global.gametype
   df.global.gametype = df.game_type.DWARF_ARENA
   gui.simulateInput(dwarfmodeScreen, 'D_LOOK_ARENA_CREATURE')
 
--- move cursor to location instead of moving unit later, corrects issue of missing mapdata when moving the created unit.
+  -- move cursor to location instead of moving unit later, corrects issue of missing mapdata when moving the created unit.
   if location then
     df.global.cursor.x = tonumber(location[1])
     df.global.cursor.y = tonumber(location[2])
@@ -123,11 +145,8 @@ function createUnit(race_id, caste_id, location)
   end
   gui.simulateInput(spawnScreen, 'SELECT')
 
-  df.global.gametype = old_gametype
-
   curViewscreen.child = nil
   dwarfmodeScreen:delete()
-  df.global.ui.main.mode = oldMode
 
   local id = df.global.unit_next_id-1
 

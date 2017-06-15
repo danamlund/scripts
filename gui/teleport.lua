@@ -14,6 +14,10 @@ guidm = require 'gui.dwarfmode'
 teleport = reqscript 'teleport'
 widgets = require 'gui.widgets'
 
+function uiMultipleUnits()
+    return #df.global.ui_sidebar_menus.unit_cursor.list > 1
+end
+
 TeleportSidebar = defclass(TeleportSidebar, guidm.MenuOverlay)
 
 function TeleportSidebar:init()
@@ -21,8 +25,13 @@ function TeleportSidebar:init()
         widgets.Label{
             frame = {b=1, l=1},
             text = {
-                {key = 'UNITJOB_ZOOM_CRE', text = ': Zoom to unit', on_activate = self:callback('zoom_unit'),
+                {key = 'UNITJOB_ZOOM_CRE',
+                    text = ': Zoom to unit, ',
+                    on_activate = self:callback('zoom_unit'),
                     enabled = function() return self.unit end},
+                {key = 'UNITVIEW_NEXT', text = ': Next',
+                    on_activate = self:callback('next_unit'),
+                    enabled = uiMultipleUnits},
                 NEWLINE,
                 NEWLINE,
                 {key = 'SELECT', text = ': Choose, ', on_activate = self:callback('choose')},
@@ -46,10 +55,9 @@ function TeleportSidebar:onAboutToShow(parent)
     end
 
     local mode = df.global.ui.main.mode
-    if mode ~= df.ui_sidebar_mode.LookAround and mode ~= df.ui_sidebar_mode.ViewUnits then
-        qerror(("Use '%s' or '%s' to select a unit"):format(
-            dfhack.screen.getKeyDisplay(df.interface_key.D_VIEWUNIT),
-            dfhack.screen.getKeyDisplay(df.interface_key.D_LOOK)
+    if mode ~= df.ui_sidebar_mode.ViewUnits then
+        qerror(("Use '%s' to select a unit"):format(
+            dfhack.screen.getKeyDisplay(df.interface_key.D_VIEWUNIT)
         ))
     end
 end
@@ -78,8 +86,12 @@ function TeleportSidebar:zoom_unit()
     self:getViewport():centerOn(self.unit.pos):set()
 end
 
+function TeleportSidebar:next_unit()
+    self:sendInputToParent('UNITVIEW_NEXT')
+end
+
 function TeleportSidebar:onRenderBody(p)
-    p:seek(1, 1)
+    p:seek(1, 1):pen(COLOR_WHITE)
     if self.in_pick_pos then
         p:string('Select destination'):newline(1):newline(1)
 
@@ -94,7 +106,11 @@ function TeleportSidebar:onRenderBody(p)
         self.unit = dfhack.gui.getAnyUnit(self._native.parent)
         p:string('Select unit:'):newline(1):newline(1)
         if self.unit then
-            p:string(dfhack.TranslateName(self.unit.name), COLOR_WHITE):newline(1)
+            local name = dfhack.TranslateName(dfhack.units.getVisibleName(self.unit))
+            p:string(name)
+            if name ~= '' then p:newline(1) end
+            p:string(dfhack.units.getProfessionName(self.unit), dfhack.units.getProfessionColor(self.unit))
+            p:newline(1)
         else
             p:string('No unit selected', COLOR_LIGHTRED)
         end

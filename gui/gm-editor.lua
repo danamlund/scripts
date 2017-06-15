@@ -148,7 +148,7 @@ function GmEditorUi:init(args)
         subviews={widgets.Label{text=helptext,frame = {l=1,t=1,yalign=0}}}}
     local mainList=widgets.List{view_id="list_main",choices={},frame = {l=1,t=3,yalign=0},on_submit=self:callback("editSelected"),
         on_submit2=self:callback("editSelectedRaw"),
-        text_pen=COLOR_DARKGREY, cursor_pen=COLOR_YELLOW}
+        text_pen=COLOR_GREY, cursor_pen=COLOR_YELLOW}
     local mainPage=widgets.Panel{
         subviews={
             mainList,

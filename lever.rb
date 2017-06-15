@@ -12,19 +12,24 @@ Can list levers, including state and links, with::
 To queue a job so that a dwarf will pull the lever 42, use ``lever pull 42``.
 This is the same as :kbd:`q` querying the building and queue a :kbd:`P` pull request.
 
-To magically toggle the lever immediately, use::
+To queue a job at high priority, add ``--high`` or ``--priority``::
+
+    lever pull 42 --high
+
+To magically toggle the lever immediately, add ``--now`` or ``--cheat``::
 
     lever pull 42 --now
 
 =end
 
-def lever_pull_job(bld)
+def lever_pull_job(bld, priority)
     ref = DFHack::GeneralRefBuildingHolderst.cpp_new
     ref.building_id = bld.id
 
     job = DFHack::Job.cpp_new
     job.job_type = :PullLever
     job.pos = [bld.centerx, bld.centery, bld.z]
+    job.flags.do_now = true if priority
     job.general_refs << ref
     bld.jobs << job
     df.job_link job
@@ -56,6 +61,7 @@ def lever_descr(bld, idx=nil)
     bld.jobs.each { |j|
         if j.job_type == :PullLever
             flags = ''
+            flags << ', now' if j.flags.do_now
             flags << ', repeat' if j.flags.repeat
             flags << ', suspended' if j.flags.suspend
             descr << " (pull order#{flags})"
@@ -101,6 +107,7 @@ end
 case $script_args[0]
 when 'pull'
     cheat = $script_args.delete('--cheat') || $script_args.delete('--now')
+    priority = $script_args.delete('--high') || $script_args.delete('--priority')
 
     if $script_args[1].nil?
         bld = df.building_find(:selected) if not bld
@@ -117,7 +124,7 @@ when 'pull'
     if cheat
         lever_pull_cheat(bld)
     else
-        lever_pull_job(bld)
+        lever_pull_job(bld, priority)
     end
 
 when 'list'
@@ -145,6 +152,9 @@ lever pull
 
 lever pull 42
  order the dwarves to pull lever 42
+
+lever pull 42 --high
+ order the dwarves to pull lever 42 at high priority
 
 lever pull 42 --cheat
  magically pull lever 42 immediately
