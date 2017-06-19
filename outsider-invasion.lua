@@ -1248,11 +1248,6 @@ function invasion(options)
 end
 
 function run(rawArgs)
-   if not dfhack.isWorldLoaded () or not dfhack.isMapLoaded () then
-      print("Error, not started playing yet")
-      return
-   end
-
    validArgs = utils.invert({
          "help",
          "now",
