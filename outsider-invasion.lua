@@ -88,6 +88,7 @@ Examples:
 local VERSION = "1.0"
 
 local utils = require 'utils'
+local gui = require 'gui'
 local dlg = require 'gui.dialogs'
 
 local dryRun = false
@@ -118,65 +119,6 @@ local monsterClass = {
    weapon = { },
 }
 
-local invaderClasses = {
-   {
-      professionId = professionsToId.WRESTLER,
-      skillModifier = 1.5,
-      primarySkills = { "WRESTLING", "DODGING" },
-      primaryAttributes = { },
-      weapon = { },
-   },
-   {
-      professionId = professionsToId.BOWMAN,
-      skillModifier = 1.0,
-      primarySkills = { "BOW", "THROWS" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_BOW" },
-   },
-   {
-      professionId = professionsToId.AXEMAN,
-      skillModifier = 1.0,
-      primarySkills = { "AXE", "ARMOR" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_HALBERD" },
-   },
-   {
-      professionId = professionsToId.SWORDSMAN,
-      skillModifier = 1.0,
-      primarySkills = { "SWORD", "SHIELD" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_SCIMITAR", "SHIELD:ITEM_SHIELD_SHIELD" },
-   },
-   {
-      professionId = professionsToId.SWORDSMAN,
-      skillModifier = 1.3,
-      primarySkills = { "DAGGER", "DODGING", "MELEE_COMBAT" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_DAGGER_LARGE", "WEAPON:ITEM_WEAPON_DAGGER_LARGE" },
-   },
-   {
-      professionId = professionsToId.MACEMAN,
-      skillModifier = 1.0,
-      primarySkills = { "MACE", "SHIELD" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_MORNINGSTAR", "SHIELD:ITEM_SHIELD_SHIELD" },
-   },
-   {
-      professionId = professionsToId.PIKEMAN,
-      skillModifier = 1.0,
-      primarySkills = { "PIKE", "ARMOR" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_PIKE" },
-   },
-   {
-      professionId = professionsToId.LASHER,
-      skillModifier = 0.5,
-      primarySkills = { "WHIP" },
-      primaryAttributes = { },
-      weapon = { "WEAPON:ITEM_WEAPON_WHIP" },
-   }
-}
-
 function getFortressStrength(difficulty)
    local population = df.global.ui.tasks.population
    local wealth = df.global.ui.tasks.wealth.total - df.global.ui.tasks.wealth.imported
@@ -195,8 +137,68 @@ function trace(msg)
    end
 end
 
+
 -- strength = 1000 is about a normal siege
 function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
+   local invaderClasses = {
+      {
+         professionId = professionsToId.WRESTLER,
+         skillModifier = 1.5,
+         primarySkills = { "WRESTLING", "DODGING" },
+         primaryAttributes = { },
+         weapon = { },
+      },
+      {
+         professionId = professionsToId.BOWMAN,
+         skillModifier = 1.0,
+         primarySkills = { "BOW", "THROWS" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_BOW" },
+      },
+      {
+         professionId = professionsToId.AXEMAN,
+         skillModifier = 1.0,
+         primarySkills = { "AXE", "ARMOR" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_HALBERD" },
+      },
+      {
+         professionId = professionsToId.SWORDSMAN,
+         skillModifier = 1.0,
+         primarySkills = { "SWORD", "SHIELD" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_SCIMITAR", "SHIELD:ITEM_SHIELD_SHIELD" },
+      },
+      {
+         professionId = professionsToId.SWORDSMAN,
+         skillModifier = 1.3,
+         primarySkills = { "DAGGER", "DODGING", "MELEE_COMBAT" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_DAGGER_LARGE", "WEAPON:ITEM_WEAPON_DAGGER_LARGE" },
+      },
+      {
+         professionId = professionsToId.MACEMAN,
+         skillModifier = 1.0,
+         primarySkills = { "MACE", "SHIELD" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_MORNINGSTAR", "SHIELD:ITEM_SHIELD_SHIELD" },
+      },
+      {
+         professionId = professionsToId.PIKEMAN,
+         skillModifier = 1.0,
+         primarySkills = { "PIKE", "ARMOR" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_PIKE" },
+      },
+      {
+         professionId = professionsToId.LASHER,
+         skillModifier = 0.5,
+         primarySkills = { "WHIP" },
+         primaryAttributes = { },
+         weapon = { "WEAPON:ITEM_WEAPON_WHIP" },
+      }
+   }
+
    local unitsMax = math.round(strength / 15)
    local unitsNumber = math.random(math.max(3, unitsMax - 20), math.max(4, unitsMax))
    if unitsNumber > maxUnitsNumber then
@@ -205,28 +207,39 @@ function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
 
    local strengthPerUnit = 10 * strength / unitsNumber
 
-   local monsters = {
-      -- { race = "CAVE_DRAGON", strength = 500 }, -- cave dragons seem to attack other invaders
-      { race = "OGRE", strength = 1 },
-      -- { race = "TROLL", strength = 1 },
-   }
-   local monstersNumber = math.round(unitsNumber / 20)
-   unitsNumber = unitsNumber - monstersNumber
+   raceNameToId, raceIdToName = getRaceIds({"GOBLIN", "TROLL", "OGRE"})
 
-   createMonsters(x, y, z, monsters, strengthPerUnit, monstersNumber, arenaSide)
-   
-   for i = 1, unitsNumber do
-      local race = pickRandom({ GOBLIN = 50, TROLL = 5, DWARF = 1, HUMAN = 1, ELF = 1 })
-      local caste = pickRandom({ MALE = 1, FEMALE = 1 })
-      local unit = createInvader(x, y, z, race, caste, "EVIL", arenaSide)
+   local raceIdsToSpawn = {}
+   for i = 1, math.round(unitsNumber * 0.05) do
+      table.insert(raceIdsToSpawn, raceNameToId["OGRE"])
+   end
+   for i = 1, math.round(unitsNumber * 0.2) do
+      table.insert(raceIdsToSpawn, raceNameToId["TROLL"])
+   end
+   for i = 1, unitsNumber - #table do
+      table.insert(raceIdsToSpawn, raceNameToId["GOBLIN"])
+   end
+
+   local unitI = 1
+   local function spawnFunc()
+      local raceId = raceIdsToSpawn[unitI]
+      local isMonster = raceIdToName[raceId] == "OGRE"
+      local casteId = 0 -- different castes might cause more crashes
+      local unit
+      if not dryRun then
+         unit = createUnit(x, y, z, raceId, casteId, arenaSide)
+      end
       local class = invaderClasses[math.random(#invaderClasses)]
+      if isMonster then
+         class = monsterClass
+      end
 
       if not dryRun then
          unit.profession = class.professionId
          unit.profession2 = unit.profession
       end
-      
-      if i == unitsNumber and unitsNumber > 50 then
+
+      if unitI == unitsNumber then
          local profession
          if unitsNumber > 200 then
             profession = "Warmaster"
@@ -238,8 +251,7 @@ function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          if not dryRun then
             unit.custom_profession = profession
          end
-         trace("* race=" .. race
-                  .. ", caste=" .. caste
+         trace("* race=" .. raceIdToName[raceId]
                   .. ", class=" .. class.primarySkills[1]
                   .. ", leader=" .. profession)
 
@@ -251,23 +263,25 @@ function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          setUnitArmor(unit, 5.0 * strengthPerUnit, class, leaderMaterials)
          setUnitJewelry(unit, 10.0 * strengthPerUnit)
       else
-         trace("* race=" .. race
-                  .. ", caste=" .. caste
+         trace("* race=" .. raceIdToName[raceId]
                   .. ", class=" .. class.primarySkills[1])
          setUnitSkills(unit, strengthPerUnit, class)
          setUnitAttributes(unit, strengthPerUnit, class)
-         setUnitWeapons(unit, strengthPerUnit, class)
-         setUnitArmor(unit, strengthPerUnit, class)
-         setUnitJewelry(unit, strengthPerUnit)
+         if not isMonster then
+            setUnitWeapons(unit, strengthPerUnit, class)
+            setUnitArmor(unit, strengthPerUnit, class)
+         end
       end
       trace("")
+      unitI = unitI + 1
    end
 
    trace("* Goblin invasion")
    trace("Goblins: " .. unitsNumber)
-   trace("Monsters: " .. monstersNumber)
    trace("Strength: " .. strength)
    trace("Strength per unit: " .. strengthPerUnit)
+
+   delayedFuncCaller(spawnFunc, unitsNumber, 10)
 end
 
 -- elves have wooden weapons and armor but very high skill
@@ -307,13 +321,18 @@ function elfInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
       local center = math.max(0, math.min(1, 5 * strength / 2000))
       return math.round(getDistValue(center, 5) * 5)
    end
+
+   local elfId = getRaceIds({"ELF"})["ELF"]
    
-   -- Unicorns seem to attach other invaders, so no monsters
-   for i = 1, unitsNumber do
-      local race = "ELF"
-      local caste = pickRandom({ MALE = 1, FEMALE = 1 })
-      local name = "FOREST"
-      local unit = createInvader(x, y, z, race, caste, name, arenaSide)
+   -- Unicorns seem to attack other invaders, so no monsters
+   local unitI = 1
+   local function spawnFunc()
+      local raceId = elfId
+      local casteId = 0
+      local unit
+      if not dryRun then
+         unit = createUnit(x, y, z, raceId, casteId, arenaSide)
+      end
       local class = invaderClasses[math.random(#invaderClasses)]
 
       if not dryRun then
@@ -321,7 +340,7 @@ function elfInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          unit.profession2 = unit.profession
       end
       
-      if i == unitsNumber and unitsNumber > 50 then
+      if unitI == unitsNumber then
          local profession;
          if unitsNumber > 200 then
             profession = "Indigo invader"
@@ -333,8 +352,7 @@ function elfInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          if not dryRun then
             unit.custom_profession = profession
          end
-         trace("* race=" .. race
-                  .. ", caste=" .. caste
+         trace("* race=ELF"
                   .. ", class=" .. class.primarySkills[1]
                   .. ", leader=" .. profession)
 
@@ -344,8 +362,7 @@ function elfInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          setUnitArmor(unit, 5.0 * strengthPerUnit, class, materials, getQualityFuncLeader)
          setUnitJewelry(unit, 10.0 * strengthPerUnit)
       else
-         trace("* race=" .. race
-                  .. ", caste=" .. caste
+         trace("* race=ELF"
                   .. ", class=" .. class.primarySkills[1])
          setUnitSkills(unit, strengthPerUnit, class)
          setUnitAttributes(unit, strengthPerUnit, class)
@@ -354,12 +371,15 @@ function elfInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          setUnitJewelry(unit, strengthPerUnit)
       end
       trace("")
+      unitI = unitI + 1
    end
 
    trace("* Elven invasion")
    trace("Elves: " .. unitsNumber)
    trace("Strength: " .. strength)
    trace("Strength per unit: " .. strengthPerUnit)
+
+   delayedFuncCaller(spawnFunc, unitsNumber, 10)
 end
 
 -- beasts attack other not of its kind. So can only spawn one beast type at a time.
@@ -373,31 +393,36 @@ function semiMegaBeastInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
       weapon = { "WEAPON:ITEM_WEAPON_AXE_GREAT" },
    }
 
+   raceNameToId = getRaceIds({"MINOTAUR", "ETTIN", "CYCLOPS", "GIANT"})
+
    local semimegabeasts = {
       {
          race = "MINOTAUR",
+         raceId = raceNameToId["MINOTAUR"],
          unitsMaxMultiplier = 1/80,
          class = axemanClass
       },
       {
          race = "ETTIN",
+         raceId = raceNameToId["ETTIN"],
          unitsMaxMultiplier = 1/160,
          class = monsterClass
       },
       {
          race = "CYCLOPS",
+         raceId = raceNameToId["CYCLOPS"],
          unitsMaxMultiplier = 1/160,
          class = monsterClass
       },
       {
          race = "GIANT",
+         raceId = raceNameToId["GIANT"],
          unitsMaxMultiplier = 1/200,
          class = monsterClass
       },
    }
 
    local beast = semimegabeasts[math.random(#semimegabeasts)]
-   beast = semimegabeasts[4]
 
    local unitsMax = math.round(strength * beast.unitsMaxMultiplier)
    local unitsNumber = math.random(math.round(math.max(1, unitsMax * 0.7)),
@@ -407,13 +432,14 @@ function semiMegaBeastInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
    end
    local strengthPerUnit = 5 * strength / unitsNumber
 
-   for i = 1, unitsNumber do
-      local caste = pickRandom({ MALE = 1, FEMALE = 1 })
-      local name = "EVIL"
-      local unit = createInvader(x, y, z, beast.race, caste, name, arenaSide)
+   local function spawnFunc()
+      local casteId = 0
+      local unit
+      if not dryRun then
+         unit = createUnit(x, y, z, beast.raceId, casteId, arenaSide)
+      end
       
-      trace("* race=" .. beast.race
-               .. ", caste=" .. caste
+      trace("* race=" .. beast.raceId
                .. ", class=" .. beast.class.primarySkills[1]
                .. ", strength=" .. strengthPerUnit)
       if not dryRun then
@@ -431,60 +457,92 @@ function semiMegaBeastInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
    trace("* Semimegabeast invasion")
    trace("Semimegsbeasts: " .. unitsNumber)
    trace("Strength: " .. strength)
+
+   delayedFuncCaller(spawnFunc, unitsNumber, 10)
 end
 
-function createMonsters(x, y, z, races, strength, units, arenaSide)
-   local strengthPerUnit = strength / units
-   for i = 1, units do
-      local caste = pickRandom({ MALE = 1, FEMALE = 1 })
-      local validRaces = {}
-      table.insert(validRaces, races[#races]) -- always add the weakest
-      for _, v in pairs(races) do
-         if v.strength < strengthPerUnit then
-            table.insert(validRaces, v)
-         end
-      end
-      local race = validRaces[math.random(#validRaces)]
-      local unitStrength = strengthPerUnit - race.strength
-      trace("* race=" .. race.race .. ", case=" .. caste .. ", strength=" .. unitStrength)
-      local unit = createInvader(x, y, z, race.race, caste, null, arenaSide)
-      setUnitSkills(unit, unitStrength, monsterClass)
-      setUnitAttributes(unit, unitStrength, monsterClass)
-      trace("")
-      strength = strength - race.strength
-      strengthPerUnit = strength / (units - i)
-   end
-end
 
-function createInvader(x, y, z, race, caste, name, arenaSide)
-   if dryRun then
-      return null
+-- A simplified version of modtools/create-unit.lua
+-- It seems the fewer memory read/writes, the fewer crashes
+function createUnit(x, y, z, raceId, casteId, arenaSide)
+   if #df.global.world.arena_spawn.race == 0 then
+      df.global.world.arena_spawn.race:resize(1)
    end
+   if df.global.world.arena_spawn.race[0] ~= raceId then
+      df.global.world.arena_spawn.race[0] = raceId
+   end
+
+   if #df.global.world.arena_spawn.caste == 0 then
+      df.global.world.arena_spawn.caste:resize(1)
+   end
+   if df.global.world.arena_spawn.caste[0] ~= casteId then
+      df.global.world.arena_spawn.caste[0] = casteId
+   end
+
+   if #df.global.world.arena_spawn.creature_cnt == 0 then
+      df.global.world.arena_spawn.creature_cnt:resize(1)
+   end
+   if df.global.world.arena_spawn.creature_cnt[0] ~= 0 then
+      df.global.world.arena_spawn.creature_cnt[0] = 0
+   end
+
+   arenaSide = arenaSide or 0
+   if df.global.world.arena_spawn.side ~= arenaSide then
+      df.global.world.arena_spawn.side = arenaSide
+   end
+
+   local view_x = df.global.window_x
+   local view_y = df.global.window_y
+   local view_z = df.global.window_z
+
+   local old_gametype = df.global.gametype
+   local old_mode = df.global.ui.main.mode
+
+   local curViewscreen = dfhack.gui.getCurViewscreen()
+   local dwarfmodeScreen = df.viewscreen_dwarfmodest:new()
+   curViewscreen.child = dwarfmodeScreen
+   dwarfmodeScreen.parent = curViewscreen
+   df.global.ui.main.mode = df.ui_sidebar_mode.LookAround
+
+   df.global.gametype = df.game_type.DWARF_ARENA
+   gui.simulateInput(dwarfmodeScreen, 'D_LOOK_ARENA_CREATURE')
    
-   local args = { "-location", "[", tostring(x), tostring(y), tostring(z), "]",
-                  "-race", race,
-                  "-caste", caste }
-   if not dfhack.world.isArena() then
-      -- with these flags enemies just dance or something in arena mode
-      table.insert(args, "-flagSet")
-      table.insert(args, "[")
-      table.insert(args, "marauder")
-      table.insert(args, "active_invader")
-      table.insert(args, "invader_origin")
-      table.insert(args, "invades")
-      table.insert(args, "hidden_ambusher")
-      table.insert(args, "]")
-   end
-   if name then
-      table.insert(args, "-name")
-      table.insert(args, name)
+   df.global.cursor.x = x
+   df.global.cursor.y = y
+   df.global.cursor.z = z
+
+   local spawnScreen = dfhack.gui.getCurViewscreen()
+   gui.simulateInput(spawnScreen, 'SELECT')
+
+   curViewscreen.child = nil
+   dwarfmodeScreen:delete()
+
+   df.global.gametype = old_gametype
+   df.global.ui.main.mode = old_mode
+
+   df.global.window_x = view_x
+   df.global.window_y = view_y
+   df.global.window_z = view_z
+
+   local unit = df.unit.find(df.global.unit_next_id - 1)
+   unit.flags2.calculated_nerves = false
+   unit.flags2.calculated_bodyparts = false
+   unit.flags3.body_part_relsize_computed = false
+   unit.flags3.size_modifier_computed = false
+   unit.flags3.compute_health = true
+   unit.flags3.weight_computed = false
+
+   unit.name.has_name = false
+   if unit.status.current_soul then
+      unit.status.current_soul.name.has_name = false
    end
 
-   df.global.world.arena_spawn.side = arenaSide or 0
+   unit.flags1.marauder = true
+   unit.flags1.active_invader = true
+   unit.flags1.invader_origin = true
+   unit.flags1.invades = true
+   unit.flags1.hidden_ambusher = true
    
-   dfhack.run_script('modtools/create-unit', table.unpack(args))
-   local unit = df.global.world.units.all[#df.global.world.units.all - 1]
-
    return unit
 end
 
@@ -720,7 +778,7 @@ function setUnitJewelry(unit, strength)
       table.insert(digits, "FINGER1")
       table.insert(digits, "TOE1")
       table.insert(teeth, "U_F_TOOTH")
-  end
+   end
    
    local jewelryTypes = {
       { item = "AMULET:NONE",
@@ -878,6 +936,20 @@ function equipItem(unit, item, bodyPartName, modeName)
    return dfhack.items.moveToInventory(item, unit, mode, bodyPart)
 end
 
+function getRaceIds(raceNames)
+   local nameToId = {}
+   local idToName = {}
+   for i,v in ipairs(df.global.world.raws.creatures.all) do
+      for _, race in pairs(raceNames) do
+         if race == v.creature_id then
+            nameToId[race] = i
+            idToName[i] = race
+         end
+      end
+   end
+   return nameToId, idToName
+end
+
 function getInvasionTile()
    local xMax, yMax, zMax = dfhack.maps.getTileSize()
 
@@ -918,6 +990,22 @@ function getGroundZ(x, y)
       end
    end
    return nil
+end
+
+function delayedFuncCaller(func, timesToCall, delay, initialDelay)
+   local initialDelay = initialDelay or delay
+   local callsLeft = timesToCall
+
+   local function delayCaller()
+      callsLeft = callsLeft - 1
+      if callsLeft >= 0 then
+         -- running with suspend seems to cause fewer crashes
+         dfhack.with_suspend(func)
+         dfhack.timeout(delay, "ticks", delayCaller)
+      end
+   end
+
+   dfhack.timeout(initialDelay, "ticks", delayCaller)
 end
 
 function string.starts(String,Start)
@@ -1031,8 +1119,12 @@ function savePersistence(data)
    put("nextInvasionTick", data.nextInvasionTick)
 end
 
+function isFortLoaded()
+   return dfhack.isWorldLoaded () and dfhack.isMapLoaded()
+end
+
 function checkGameStarted()
-   if not dfhack.isWorldLoaded () or not dfhack.isMapLoaded () then
+   if not isFortLoaded() then
       error("No fort loaded")
    end
 end
@@ -1274,8 +1366,9 @@ function run(rawArgs)
       checkGameStarted()
       setEveryMonths(args)
    else
-      checkGameStarted()
-      printStatus()
+      if isFortLoaded() then
+         printStatus()
+      end
    end
 end
 
