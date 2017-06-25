@@ -5,7 +5,7 @@ fix/diplomats
 =============
 Adds a Diplomat position to all Elven civilizations, allowing them to negotiate
 tree cutting quotas - and you to violate them and start wars.
-This was vanilla behaviour until ``0.31.12``, in which the "bug" was "fixed".
+This was vanilla behaviour until version 0.31.12, in which the "bug" was "fixed".
 
 ]====]
 
@@ -17,7 +17,7 @@ function update_pos(ent)
     pos.code = "DIPLOMAT"
     pos.id = ent.positions.next_position_id + 1
     ent.positions.next_position_id = ent.positions.next_position_id + 1
-    
+
     pos.flags.DO_NOT_CULL = true
     pos.flags.MENIAL_WORK_EXEMPTION = true
     pos.flags.SLEEP_PRETENSION = true
