@@ -200,7 +200,7 @@ function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
    }
 
    local unitsMax = math.round(strength / 15)
-   local unitsNumber = math.random(math.max(3, unitsMax - 20), math.max(4, unitsMax))
+   local unitsNumber = math.random(math.max(1, unitsMax - 20), math.max(1, unitsMax))
    if unitsNumber > maxUnitsNumber then
       unitsNumber = maxUnitsNumber
    end
@@ -239,7 +239,7 @@ function goblinInvasion(x, y, z, strength, maxUnitsNumber, arenaSide)
          unit.profession2 = unit.profession
       end
 
-      if unitI == unitsNumber then
+      if unitI == unitsNumber and unitsNumber > 10 then
          local profession
          if unitsNumber > 200 then
             profession = "Warmaster"
