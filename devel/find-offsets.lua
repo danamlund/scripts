@@ -448,37 +448,12 @@ local function find_cursor()
 end
 
 --
--- Announcements
---
-
-local function find_announcements()
-    local idx, addr = data.int32_t:find_one{
-        25, 25, 31, 31, 24, 24, 40, 40, 40, 40, 40, 40, 40
-    }
-    if idx then
-        ms.found_offset('announcements', addr)
-        return
-    end
-
-    dfhack.printerr('Could not find announcements.')
-end
-
---
 -- d_init
 --
 
 local function is_valid_d_init(di)
     if di.sky_tile ~= 178 then
         print('Sky tile expected 178, found: '..di.sky_tile)
-        if not utils.prompt_yes_no('Ignore?') then
-            return false
-        end
-    end
-
-    local ann = is_known 'announcements'
-    local size,ptr = di:sizeof()
-    if ann and ptr+size ~= ann then
-        print('Announcements not immediately after d_init.')
         if not utils.prompt_yes_no('Ignore?') then
             return false
         end
@@ -983,12 +958,9 @@ dwarfmode menu, then use Tab to do as instructed below:]],
 
     ms.found_offset('ui_menu_width', addr)
 
-    -- NOTE: Assume that the vars are adjacent, as always
-    ms.found_offset('ui_area_map_width', addr+1)
-
     -- reset to make sure view is small enough for window_x/y scan on small maps
-    df.global.ui_menu_width = 2
-    df.global.ui_area_map_width = 3
+    df.global.ui_menu_width[0] = 2
+    df.global.ui_menu_width[1] = 3
 end
 
 --
@@ -1845,7 +1817,6 @@ print('\nInitial globals (need title screen):\n')
 
 exec_finder(find_gview, 'gview')
 exec_finder(find_cursor, { 'cursor', 'selection_rect', 'gamemode', 'gametype' })
-exec_finder(find_announcements, 'announcements')
 exec_finder(find_d_init, 'd_init', is_valid_d_init)
 exec_finder(find_enabler, 'enabler', is_valid_enabler)
 exec_finder(find_gps, 'gps', is_valid_gps)
@@ -1866,7 +1837,7 @@ exec_finder(find_init, 'init', is_valid_init)
 
 print('\nPrimitive globals:\n')
 
-exec_finder(find_ui_menu_width, { 'ui_menu_width', 'ui_area_map_width' })
+exec_finder(find_ui_menu_width, 'ui_menu_width')
 exec_finder(find_ui_selected_unit, 'ui_selected_unit')
 exec_finder(find_ui_unit_view_mode, 'ui_unit_view_mode')
 exec_finder(find_ui_look_cursor, 'ui_look_cursor')

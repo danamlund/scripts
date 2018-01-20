@@ -346,7 +346,7 @@ end
 if settings.clear_jobs then
     print("Clearing job list!")
     local counter=0
-    local job_link=df.global.world.job_list.next
+    local job_link=df.global.world.jobs.list.next
     while job_link and job_link.item do
         local job=job_link.item
         job_link=job_link.next

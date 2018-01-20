@@ -170,7 +170,7 @@ local mode = nil
 local ops = {}
 
 for _,kv in ipairs(args) do
-    if mode and string.match(kv, '^[%u_]+$') then
+    if mode and string.match(kv, '^[%u_ ]+$') then
         table.insert(ops, curry(mode, kv))
     elseif kv == 'reaction' then
         mode = inject_reaction

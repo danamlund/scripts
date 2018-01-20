@@ -3,7 +3,10 @@
 
 autounsuspend
 =============
-Automatically unsuspend jobs in workshops, on a recurring basis.
+Automatically unsuspend construction jobs, on a recurring basis.
+
+Will not unsuspend jobs where water flow > 1.
+
 See `unsuspend` for one-off use, or `resume` ``all``.
 
 =end
@@ -13,7 +16,7 @@ class AutoUnsuspend
 
     def process
         count = 0
-        df.world.job_list.each { |job|
+        df.world.jobs.list.each { |job|
             if job.job_type == :ConstructBuilding and job.flags.suspend and df.map_tile_at(job).designation.flow_size <= 1
                 job.flags.suspend = false
                 count += 1

@@ -76,7 +76,9 @@ function GetMatPropertiesStringList (item)
     local deg_U = item.temperature.whole
     local deg_C = math.floor((deg_U-10000)*5/9)
     append(list,"Temperature: "..deg_C.."\248C ("..deg_U.."U)")
-    append(list,"Color: "..df.global.world.raws.language.colors[mat.state_color.Solid].name)
+    if mat.state_color.Solid ~= -1 then
+        append(list,"Color: "..df.global.world.raws.language.colors[mat.state_color.Solid].name)
+    end
     local function GetStrainDescription (number)
         if tonumber(number) < 1 then return "crystalline"
         elseif tonumber(number) < 1000 then return "very stiff"
@@ -239,8 +241,8 @@ end
 function GetReactionProduct (inmat, reaction)
     for k,v in pairs (inmat.reaction_product.id) do
         if v.value == reaction then
-            return {inmat.reaction_product.material.mat_type[k],
-                    inmat.reaction_product.material.mat_index[k]}
+            return inmat.reaction_product.material.mat_type[k],
+                    inmat.reaction_product.material.mat_index[k]
         end
     end
 end

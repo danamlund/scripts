@@ -51,7 +51,7 @@ function add_thought(unit, emotion, thought)
     thought=thought,
     subthought=0,
     severity=0,
-    flags=0,
+    flags={},
     unk7=0,
     year=df.global.cur_year,
     year_tick=df.global.cur_year_tick})

@@ -14,13 +14,6 @@ function has_field(tbl, field)
     return (pcall(function() assert(tbl[field] ~= nil) end))
 end
 
-function class_has_field(cls, field)
-    local obj = cls:new()
-    local ret = has_field(obj, field)
-    obj:delete()
-    return ret
-end
-
 versions = {
 -- skipped v0.21-v0.28
     [1287] = "0.31.01",
@@ -97,6 +90,12 @@ versions = {
     [1553] = "0.43.03",
     [1555] = "0.43.04",
     [1556] = "0.43.05",
+
+    [1596] = "0.44.01",
+    [1597] = "0.44.02",
+    [1600] = "0.44.03",
+    [1603] = "0.44.04",
+    [1604] = "0.44.05",
 }
 
 min_version = math.huge
@@ -107,15 +106,15 @@ for k in pairs(versions) do
     max_version = math.max(max_version, k)
 end
 
-if class_has_field(df.world, 'save_version') then
+if has_field(df.global.world, 'save_version') then
     function get_save_version()
         return df.global.world.save_version
     end
-elseif df.world.T_cur_savegame and class_has_field(df.world.T_cur_savegame, 'save_version') then
+elseif df.world.T_cur_savegame and has_field(df.global.world.cur_savegame, 'save_version') then
     function get_save_version()
         return df.global.world.cur_savegame.save_version
     end
-elseif class_has_field(df.world.T_pathfinder, 'anon_2') then
+elseif has_field(df.global.world.pathfinder, 'anon_2') then
     function get_save_version()
         return df.global.world.pathfinder.anon_2
     end
@@ -123,7 +122,7 @@ else
     get_save_version = dummy
 end
 
-if class_has_field(df.world, 'original_save_version') then
+if has_field(df.global.world, 'original_save_version') then
     function get_original_save_version()
         return df.global.world.original_save_version
     end

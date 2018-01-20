@@ -14,7 +14,7 @@ local utils = require('utils')
 
 local count = 0
 
-for link,job in utils.listpairs(df.global.world.job_list) do
+for link,job in utils.listpairs(df.global.world.jobs.list) do
     local job = link.item
     local place = dfhack.job.getHolder(job)
 

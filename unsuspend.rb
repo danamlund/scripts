@@ -4,12 +4,12 @@
 
 unsuspend
 =========
-Unsuspend jobs in workshops, on a one-off basis.  See `autounsuspend`
+Unsuspend construction jobs, on a one-off basis.  See `autounsuspend`
 for regular use.
 
 =end
 
-joblist = df.world.job_list.next
+joblist = df.world.jobs.list.next
 count = 0
 
 while joblist
