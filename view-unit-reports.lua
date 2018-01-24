@@ -46,36 +46,8 @@ local function find_last_unit_with_combat_log_and_race(race_id)
 end
 
 local function current_selected_unit()
-   -- 'v' view, 'k' at unit, unit list view
-   local unit = dfhack.gui.getSelectedUnit(true)
-   if unit then
-      return unit
-   end
-
-   -- 'k' over a corpse
-   local item = dfhack.gui.getSelectedItem(true)
-   if df.item_corpsest:is_instance(item) then
-      return df.unit.find(item.unit_id)
-   end
-
-   -- 'k' over some spatter (e.g. blood)
-   local screen_string = dfhack.gui.getFocusString(dfhack.gui.getCurViewscreen())
-   if screen_string == "dwarfmode/LookAround/Spatter" then
-      local look_at = df.global.ui_look_list.items[df.global.ui_look_cursor]
-      local matinfo = dfhack.matinfo.decode(look_at.spatter_mat_type, look_at.spatter_mat_index)
-
-      -- spatter is related to historical figure
-      if matinfo.figure then
-         return df.unit.find(matinfo.figure.unit_id)
-      end
-
-      -- spatter is only related to a race. find good unit with that race.
-      if matinfo.creature then
-         return find_last_unit_with_combat_log_and_race(matinfo.index)
-      end
-   end
-
-   return nil
+    local unit_item_viewer = reqscript 'gui/unit-info-viewer'
+    return unit_item_viewer.getUnit_byVS(true)
 end
 
 local unit = current_selected_unit()

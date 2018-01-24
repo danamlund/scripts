@@ -3,6 +3,8 @@
 -- version 1.04
 -- original author: Kurik Amudnil
 -- edited by expwnent
+
+--@ module = true
 --[====[
 
 gui/unit-info-viewer
@@ -746,12 +748,14 @@ function UnitInfoViewer:chunk_Dead()
     self:insert_chunk(blurb,pen)
 end
 
--- only show if UnitInfoViewer isn't the current focus
-if dfhack.gui.getCurFocus() ~= 'dfhack/lua/'..UnitInfoViewer.focus_path then
-    local gui_no_unit = false -- show if not found?
-    local unit = getUnit_byVS(gui_no_unit) -- silent? or let the gui display
-    if unit or gui_no_unit then
-        local kan_viewscreen = UnitInfoViewer{unit = unit}
-        kan_viewscreen:show()
+if not moduleMode then
+    -- only show if UnitInfoViewer isn't the current focus
+    if dfhack.gui.getCurFocus() ~= 'dfhack/lua/'..UnitInfoViewer.focus_path then
+        local gui_no_unit = false -- show if not found?
+        local unit = getUnit_byVS(gui_no_unit) -- silent? or let the gui display
+        if unit or gui_no_unit then
+            local kan_viewscreen = UnitInfoViewer{unit = unit}
+            kan_viewscreen:show()
+        end
     end
 end
