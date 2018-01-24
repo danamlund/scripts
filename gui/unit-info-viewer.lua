@@ -67,6 +67,21 @@ function getUnit_byVS(silent)    -- by view screen mode
             u = df.global.ui.burrows.list_units[ df.global.ui.burrows.unit_cursor_pos ]
         elseif df.global.ui.follow_unit ~= -1 then -- (f)ollow
             u = getUnit_byID(df.global.ui.follow_unit)
+        else
+            local item = dfhack.gui.getSelectedItem(true)
+            if df.item_corpsest:is_instance(item) then
+                -- 'k' over a corpse
+                u = df.unit.find(item.unit_id)
+            elseif view_name == "dwarfmode/LookAround/Spatter" then
+                -- 'k' over some spatter (blood, ichor, etc.)
+                local look_at = df.global.ui_look_list.items[df.global.ui_look_cursor]
+                local matinfo = dfhack.matinfo.decode(look_at.spatter_mat_type,
+                                                      look_at.spatter_mat_index)
+                if matinfo.figure then
+                    -- spatter is related to historical figure
+                    u = df.unit.find(matinfo.figure.unit_id)
+                end
+            end
         end
     elseif df.viewscreen_petst:is_instance(v) then
         -- context: @pet/List/Unit -- z (status) -> animals
