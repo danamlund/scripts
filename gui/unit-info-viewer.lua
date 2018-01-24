@@ -52,22 +52,22 @@ function getUnit_byVS(silent)    -- by view screen mode
     u = dfhack.gui.getSelectedUnit(true) -- supports gui scripts/plugin that provide a hook for getSelectedUnit()
     if u then
         return u
-        -- else: contexts not currently supported by dfhack.gui.getSelectedUnit()
+    -- else: contexts not currently supported by dfhack.gui.getSelectedUnit()
     elseif df.viewscreen_dwarfmodest:is_instance(v) then
-        tmp = df.global.ui.main.mode
-        if tmp == 17 or tmp == 42 or tmp == 43 then
-            -- context: @dwarfmode/QueryBuiding/Some/Cage    -- (q)uery cage
-            -- context: @dwarfmode/ZonesPenInfo/AssignUnit    -- i (zone) -> pe(N)
-            -- context: @dwarfmode/ZonesPitInfo                -- i (zone) -> (P)it
+        local view_name = dfhack.gui.getFocusString(v)
+        if df.global.ui_building_in_assign -- (q)uery cage -> (a)ssign
+           or view_name == "dwarfmode/ZonesPenInfo/Assign/Unit" -- i (zone) -> pe(N)
+           or view_name == "dwarfmode/ZonesPitInfo" then -- i (zone) -> (P)it
             u = df.global.ui_building_assign_units[df.global.ui_building_item_cursor]
-        elseif tmp == 49 and df.global.ui.burrows.in_add_units_mode then
-            -- @dwarfmode/Burrows/AddUnits
+        elseif view_name == "dwarfmode/QueryBuilding/Some/Cage" then -- (q)uery cage
+            local cage = dfhack.gui.getSelectedBuilding(true)
+            local unit_id = cage.assigned_units[df.global.ui_building_item_cursor]
+            u = df.unit.find(unit_id)
+        elseif df.global.ui.burrows.in_add_units_mode then -- burro(w) -> (c) add citizen
             u = df.global.ui.burrows.list_units[ df.global.ui.burrows.unit_cursor_pos ]
-
-        elseif df.global.ui.follow_unit ~= -1 then
-            -- context: follow unit mode
+        elseif df.global.ui.follow_unit ~= -1 then -- (f)ollow
             u = getUnit_byID(df.global.ui.follow_unit)
-        end -- end viewscreen_dwarfmodest
+        end
     elseif df.viewscreen_petst:is_instance(v) then
         -- context: @pet/List/Unit -- z (status) -> animals
         if v.mode == 0 then -- List
