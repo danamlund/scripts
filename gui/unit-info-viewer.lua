@@ -78,9 +78,6 @@ function getUnit_byVS(silent)    -- by view screen mode
         elseif v.mode == 2 then -- select trainer
             u = v.trainer_unit[v.trainer_cursor]
         end
-    elseif df.viewscreen_layer_workshop_profilest:is_instance(v) then
-        -- context: @layer_workshop_profile/Unit     -- (q)uery workshop -> (P)rofile -- df.global.ui.main.mode == 17
-        u = v.workers[v.layer_objects[0].cursor]
     elseif df.viewscreen_layer_overall_healthst:is_instance(v) then
         -- context @layer_overall_health/Units -- z -> health
         u = v.unit[v.layer_objects[0].cursor]
