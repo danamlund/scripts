@@ -74,13 +74,7 @@ function getUnit_byVS(silent)    -- by view screen mode
             if not v.is_vermin[v.cursor] then
                 u = v.animal[v.cursor].unit
             end
-            --elseif v.mode = 1 then -- training knowledge (no unit reference)
-        elseif v.mode == 2 then -- select trainer
-            u = v.trainer_unit[v.trainer_cursor]
         end
-    elseif df.viewscreen_layer_overall_healthst:is_instance(v) then
-        -- context @layer_overall_health/Units -- z -> health
-        u = v.unit[v.layer_objects[0].cursor]
     elseif df.viewscreen_layer_militaryst:is_instance(v) then
         local PG_ASSIGNMENTS = 0
         local PG_EQUIPMENT = 2
@@ -99,57 +93,9 @@ function getUnit_byVS(silent)    -- by view screen mode
             -- context: @layer_military/Equip/Uniform/Positions    -- m -> (e)quip -> assign (U)niforms -> Positions
             u = v.equip.units[v.layer_objects[TB_POSITIONS].cursor]
         end
-    elseif df.viewscreen_layer_noblelistst:is_instance(v) then
-        if v.mode == 0 then
-            -- context: @layer_noblelist/List    -- (n)obles
-            u = v.info[v.layer_objects[v.mode].cursor].unit
-        elseif v.mode == 1 then
-            -- context: @layer_noblelist/Appoint    -- (n)obles -> (r)eplace
-            u = v.candidates[v.layer_objects[v.mode].cursor].unit
-        end
-    elseif df.viewscreen_unitst:is_instance(v) then
-        -- @unit    -- (v)unit -> z ; loo(k) -> enter ; (n)obles -> enter ; others
-        u = v.unit
     elseif df.viewscreen_customize_unitst:is_instance(v) then
         -- @customize_unit    -- @unit -> y
         u = v.unit
-    elseif df.viewscreen_layer_unit_healthst:is_instance(v) then
-        -- @layer_unit_health    -- @unit -> h ; @layer_overall_health/Units -> enter
-        if df.viewscreen_layer_overall_healthst:is_instance(v.parent) then
-            -- context @layer_overall_health/Units     -- z (status)-> health
-            u = v.parent.unit[v.parent.layer_objects[0].cursor]
-        elseif df.viewscreen_unitst:is_instance(v.parent) then
-            -- @unit    -- (v)unit -> z ; loo(k) -> enter ; (n)obles -> enter ; others
-            u = v.parent.unit
-        end
-    elseif df.viewscreen_textviewerst:is_instance(v) then
-        -- @textviewer    -- @unit -> enter (thoughts and preferences)
-        if df.viewscreen_unitst:is_instance(v.parent) then
-            -- @unit    -- @unit -> enter (thoughts and preferences)
-            u = v.parent.unit
-        elseif df.viewscreen_itemst:is_instance(v.parent) then
-            tmp = v.parent.entry_ref[v.parent.cursor_pos]
-            if df.general_ref_unit:is_instance(tmp) then -- general_ref_unit and derived ; general_ref_contains_unitst ; others?
-                u = getUnit_byID(tmp.unit_id)
-            end
-        elseif df.viewscreen_dwarfmodest:is_instance(v.parent) then
-            tmp = df.global.ui.main.mode
-            if tmp == 24 then -- (v)iew units {g,i,p,w} -> z (thoughts and preferences)
-                -- context: @dwarfmode/ViewUnits/...
-                --if df.global.ui_selected_unit > -1 then -- -1 = 'no units nearby'
-                u = df.global.world.units.active[df.global.ui_selected_unit]
-                --end
-            elseif tmp == 25 then -- loo(k) unit -> enter (thoughs and preferences)
-                -- context: @dwarfmode/LookAround/Unit
-                tmp = df.global.ui_look_list.items[df.global.ui_look_cursor]
-                if tmp.type == 2 then -- 0:item 1:terrain >>2: unit<< 3:building 4:colony/vermin 7:spatter
-                    u = tmp.unit
-                end
-            end
-        elseif df.viewscreen_unitlistst:is_instance(v.parent) then -- (u)nit list -> (v)iew unit (not citizen)
-            -- context: @unitlist/Citizens ; @unitlist/Livestock ; @unitlist/Others ; @unitlist/Dead
-            u = v.parent.units[v.parent.page][ v.parent.cursor_pos[v.parent.page] ]
-        end
     end    -- switch viewscreen
     if not u and not silent then
         dfhack.printerr('No unit is selected in the UI or context not supported.')
