@@ -46,6 +46,19 @@ function getUnit_byID(id) -- get unit by id from units.all via binsearch
     end
 end
 
+function getOtherUnitWithCombatReportId(report_id, report_type, main_unit)
+    for _, unit in pairs(df.global.world.units.all) do
+        if unit ~= main_unit then
+            for _,current_report_id in pairs(unit.reports.log[report_type]) do
+                if current_report_id == report_id then
+                    return unit
+                end
+            end
+        end
+    end
+    return nil
+end
+
 function getUnit_byVS(silent)    -- by view screen mode
     silent = silent or false
     -- if not world loaded, return nil ?
@@ -113,6 +126,16 @@ function getUnit_byVS(silent)    -- by view screen mode
     elseif df.viewscreen_customize_unitst:is_instance(v) then
         -- @customize_unit    -- @unit -> y
         u = v.unit
+    elseif df.viewscreen_reportlistst:is_instance(v) then
+        -- context: (r)eports
+        u = v.units[v.cursor]
+    elseif df.viewscreen_announcelistst:is_instance(v) then
+        -- context: (r)eports -> (Enter) view report
+        -- Show other participant of the selected combat log
+        local main_unit = v.unit
+        local report = v.reports[v.sel_idx]
+        local report_type = df.unit_report_type[v.report_type]
+        u = getOtherUnitWithCombatReportId(report.id, report_type, main_unit)
     end    -- switch viewscreen
     if not u and not silent then
         dfhack.printerr('No unit is selected in the UI or context not supported.')
